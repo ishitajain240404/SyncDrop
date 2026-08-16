@@ -3,6 +3,12 @@
 SyncDrop is a light-themed, high-performance, peer-to-peer (P2P) progressive web application engineered for zero-cloud, direct browser-to-browser file sharing. Built using WebRTC Data Channels and the browser-native Origin Private File System (OPFS), SyncDrop streams arbitrary-sized files directly to local disk handles without intermediate server storage, memory overhead, or size limitations.
 
 ---
+## 📽️ Demo
+
+<video src="./assets/SyncDrop_Demo_Video.mp4" controls width="100%"></video>
+
+🔗 [Watch or Download SyncDrop Demo Video](./assets/SyncDrop_Demo_Video.mp4)
+---
 
 ## Technical Architecture
 
