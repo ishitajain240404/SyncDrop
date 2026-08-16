@@ -88,7 +88,7 @@ SyncDrop separates the signaling control plane from the direct P2P data engine. 
 
 ## Tech Stack & Project Dependencies
 
-### Frontend (`/`)
+### Frontend (`/client`)
 
 - **Framework**: React 18, Vite
 - **Protocols & Storage**: WebRTC (`RTCPeerConnection`, `RTCDataChannel`), OPFS, IndexedDB, WebSockets
@@ -113,14 +113,14 @@ SyncDrop separates the signaling control plane from the direct P2P data engine. 
 ### 1. Repository Setup
 
 ```bash
-git clone [https://github.com/](https://github.com/)<YOUR_GITHUB_USERNAME>/syncdrop.git
-cd syncdrop
+git clone https://github.com/ishitajain240404/SyncDrop.git
+cd SyncDrop
 ```
 
 ### 2. Backend Installation & Run
 
 ```bash
-cd backend
+cd server
 npm install
 ```
 
@@ -141,11 +141,11 @@ npm start
 Open a new terminal window and navigate to the frontend directory:
 
 ```bash
-cd frontend
+cd client
 npm install
 ```
 
-Create a `.env` file inside `/frontend`:
+Create a `.env` file inside `/client`:
 
 ```env
 VITE_BACKEND_URL=http://localhost:5000
