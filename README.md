@@ -3,12 +3,12 @@
 SyncDrop is a light-themed, high-performance, peer-to-peer (P2P) progressive web application engineered for zero-cloud, direct browser-to-browser file sharing. Built using WebRTC Data Channels and the browser-native Origin Private File System (OPFS), SyncDrop streams arbitrary-sized files directly to local disk handles without intermediate server storage, memory overhead, or size limitations.
 
 ---
+
 ## 📽️ Demo
 
 <video src="https://github.com/user-attachments/assets/ac1e0ccc-c5e5-46e9-a0e8-370a8b6c45e5" controls width="100%"></video>
 
-🔗 [Watch or Download SyncDrop Demo Video](./assets/SyncDrop_Demo_Video.mp4)
----
+## 🔗 [Watch or Download SyncDrop Demo Video](./assets/SyncDrop_Demo_Video.mp4)
 
 ## Technical Architecture
 
@@ -62,6 +62,20 @@ SyncDrop separates the signaling control plane from the direct P2P data engine. 
 ---
 
 ## Comprehensive Application Features
+
+## ⚡ Benchmarks & Performance Test
+
+### 🎥 4 GB Real-Time Completion Clip
+
+<video src="https://github.com/user-attachments/assets/ba2d511a-f347-4cb5-b33c-e6511d54d5b8" controls width="100%">
+  Your browser does not support the video tag.
+</video>
+
+**[🔗 Watch / Download 4 GB Transfer Benchmark Video](./assets/SyncDrop_4GB_File_Transfer.mp4)**
+
+- **Tested Transfer Capacity:** Successfully transferred a **4 GB binary file** end-to-end between peer browsers in 30 minutes (~2.28 MB/s sustained throughput).
+- **Memory Optimization:** Kept browser RAM usage under **< 50 MB** throughout the entire multi-gigabyte transfer by leveraging **64 KB chunking** and streaming data directly to disk via **OPFS**.
+- **Network Architecture:** Maintained steady transfer speeds over direct WebRTC Data Channels with zero memory leaks, buffer bloat, or tab crashes.
 
 ### Core WebRTC Streaming & Protocol Features
 
