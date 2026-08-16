@@ -5,7 +5,7 @@ SyncDrop is a light-themed, high-performance, peer-to-peer (P2P) progressive web
 ---
 ## 📽️ Demo
 
-<video src="./assets/SyncDrop_Demo_Video.mp4" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/ac1e0ccc-c5e5-46e9-a0e8-370a8b6c45e5" controls width="100%"></video>
 
 🔗 [Watch or Download SyncDrop Demo Video](./assets/SyncDrop_Demo_Video.mp4)
 ---
