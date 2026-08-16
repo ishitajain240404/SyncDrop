@@ -124,7 +124,7 @@ cd server
 npm install
 ```
 
-Create a `.env` file inside `/backend`:
+Create a `.env` file inside `/server`:
 
 ```env
 PORT=5000
