@@ -38,6 +38,9 @@ export class WebRTCManager {
     this.dataChannel = null;
     this.isInitiator = false;
 
+    // Guard flag to prevent duplicate/concurrent initialization loops
+    this.isInitializing = false;
+
     // Presence Guard
     this.isRemotePeerPresent = false;
 
@@ -68,6 +71,7 @@ export class WebRTCManager {
     this.signalingChain = Promise.resolve();
   }
 
+  // if the peer leaves the room or the peers web socket connection closes
   setRemotePeerPresent(isPresent) {
     console.log(`[WebRTC] Remote peer presence changed: ${isPresent}`);
     this.isRemotePeerPresent = isPresent;
@@ -88,6 +92,14 @@ export class WebRTCManager {
       return;
     }
 
+    // CHANGED: Block re-entrant initialization if one is currently in progress
+    if (this.isInitializing) {
+      console.log(
+        "[WebRTC] Initialization already in progress. Ignoring duplicate init request.",
+      );
+      return;
+    }
+
     if (
       !forceReinit &&
       this.peerConnection &&
@@ -98,12 +110,31 @@ export class WebRTCManager {
     }
 
     console.warn("[WebRTC] Performing full teardown & re-initialization...");
+
+    // CHANGED: Set initialization lock before cleaning up state
+    this.isInitializing = true;
     this.cleanup();
+
+    // Re-assign the initialization lock as cleanup() clears it
+    this.isInitializing = true;
     this.isInitiator = isInitiator;
+
+    // CHANGED: If non-initiator triggers initConnection, notify initiator to reset and send offer
+    if (!isInitiator) {
+      this.sendSignal({ type: "reinit-request" });
+    }
+
     this.setupPeerConnection(isInitiator);
   }
 
   setupPeerConnection(isInitiator) {
+    if (!this.isRemotePeerPresent) {
+      console.warn(
+        "[WebRTC] Skipping setupPeerConnection: Remote peer is not present.",
+      );
+      this.isInitializing = false; // Ensure guard lock is released if remote peer is absent
+      return;
+    }
     this.peerConnection = new RTCPeerConnection(RTC_CONFIG);
 
     this.peerConnection.onicecandidate = (event) => {
@@ -130,6 +161,8 @@ export class WebRTCManager {
 
       if (state === "connected") {
         this.clearIceRestartTimer();
+        // CHANGED: Clear initializing lock on connection recovery
+        this.isInitializing = false;
       } else if (state === "failed") {
         console.warn(`[WebRTC] Peer connection state is 'failed'.`);
         if (this.isInitiator) {
@@ -182,7 +215,11 @@ export class WebRTCManager {
             },
           });
         })
-        .catch((err) => this.handleError("Failed to create offer", err));
+        .catch((err) => {
+          // CHANGED: Reset lock on offer failure
+          this.isInitializing = false;
+          this.handleError("Failed to create offer", err);
+        });
     } else {
       this.peerConnection.ondatachannel = (event) => {
         this.dataChannel = event.channel;
@@ -205,9 +242,10 @@ export class WebRTCManager {
       !this.peerConnection ||
       this.peerConnection.connectionState === "closed"
     ) {
+      this.isInitializing = true;
       this.cleanup();
-      this.isInitiator = false;
-      this.setupPeerConnection(false);
+      this.isInitializing = true;
+      this.setupPeerConnection(this.isInitiator);
     }
     const connState = this.peerConnection.connectionState;
     const sigState = this.peerConnection.signalingState;
@@ -222,7 +260,9 @@ export class WebRTCManager {
           console.warn(
             "[WebRTC] Incoming offer on degraded/unstable peer connection. Resetting connection context...",
           );
+          this.isInitializing = true;
           this.cleanup();
+          this.isInitializing = true;
           this.setupPeerConnection(false);
         }
 
@@ -284,8 +324,23 @@ export class WebRTCManager {
           );
           this.restartIce();
         }
+      } else if (signalData.type === "reinit-request") {
+        // CHANGED: Check if current user is the original initiator and not already initializing
+        if (this.isInitiator && !this.isInitializing) {
+          console.warn(
+            "[WebRTC] Received 'reinit-request' from remote peer. Initiator re-initializing connection...",
+          );
+          // Reuse initConnection to perform clean teardown and fresh setup
+          this.initConnection(true, true);
+        } else {
+          console.log(
+            `[WebRTC] Ignoring 'reinit-request': isInitiator=${this.isInitiator}, isInitializing=${this.isInitializing}`,
+          );
+        }
       }
     } catch (err) {
+      // CHANGED: Clear initializing lock on signal errors
+      this.isInitializing = false;
       this.handleError("Error processing signaling payload", err);
     }
   }
@@ -309,6 +364,8 @@ export class WebRTCManager {
     this.dataChannel.bufferedAmountLowThreshold = BACKPRESSURE_LIMIT / 2;
 
     this.dataChannel.onopen = () => {
+      // CHANGED: Unlock initialization state when DataChannel opens
+      this.isInitializing = false;
       this.clearIceRestartTimer();
       if (this.onStateChange) this.onStateChange("connected");
 
@@ -837,6 +894,8 @@ export class WebRTCManager {
   }
 
   cleanup() {
+    // CHANGED: Always clear initializing lock so recovery is unlocked on teardown
+
     this.isRestartingIce = false;
     this.clearIceRestartTimer();
 
@@ -879,5 +938,6 @@ export class WebRTCManager {
     this.sendOffset = 0;
     this.receivedSize = 0;
     this.iceCandidatesQueue = [];
+    this.isInitializing = false;
   }
 }
